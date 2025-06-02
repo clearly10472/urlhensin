@@ -119,8 +119,20 @@ exports.handler = async (event, context) => {
     const response = await makeRequest(targetUrl);
     const content = response.data;
     
-    // Extract main content (simplified approach)
-    const mainContent = content.toString();
+    // Extract main content and clean up HTML
+    let mainContent = content.toString();
+    
+    // Remove HTML tags
+    mainContent = mainContent.replace(/<[^>]*>/g, ' ');
+    
+    // Remove extra whitespace
+    mainContent = mainContent.replace(/\s+/g, ' ').trim();
+    
+    // Limit content length to avoid API limits (max 10,000 characters)
+    if (mainContent.length > 10000) {
+      console.log(`Content truncated from ${mainContent.length} to 10000 characters`);
+      mainContent = mainContent.substring(0, 10000) + '...';
+    }
     
     // Send to Gemini API for summarization
     console.log('Sending content to Gemini API for summarization');
@@ -136,6 +148,9 @@ exports.handler = async (event, context) => {
       };
     }
     
+    // より単純なリクエスト形式を使用
+    const prompt = `Summarize the following web page content in one concise sentence:\n\n${mainContent}`;
+    
     const geminiResponse = await makeRequest(
       `${geminiApiUrl}?key=${geminiApiKey}`,
       {
@@ -147,11 +162,8 @@ exports.handler = async (event, context) => {
       {
         contents: [
           {
-            role: 'user',
             parts: [
-              {
-                text: `Summarize the following web page content in one concise sentence:\n\n${mainContent}`
-              }
+              { text: prompt }
             ]
           }
         ],
