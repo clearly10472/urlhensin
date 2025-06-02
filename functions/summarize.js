@@ -179,16 +179,19 @@ exports.handler = async (event, context) => {
     
   } catch (error) {
     console.error('Error:', error.message);
+    console.error('Full error object:', JSON.stringify(error, null, 2));
     
     // Handle different types of errors
     if (error.response) {
-      console.error('Response error data:', error.response.data);
+      console.error('Response error data:', JSON.stringify(error.response.data, null, 2));
       return {
         statusCode: error.response.status || 500,
         headers,
         body: JSON.stringify({
           error: 'Error processing request',
-          details: error.response.data
+          details: error.response.data,
+          message: error.message,
+          stack: error.stack
         })
       };
     } else if (error.request) {
@@ -196,8 +199,10 @@ exports.handler = async (event, context) => {
         statusCode: 500,
         headers,
         body: JSON.stringify({
-          error: 'No response received from server',
-          details: error.message
+          error: 'Error making request',
+          details: 'No response received',
+          message: error.message,
+          stack: error.stack
         })
       };
     } else {
@@ -205,8 +210,9 @@ exports.handler = async (event, context) => {
         statusCode: 500,
         headers,
         body: JSON.stringify({
-          error: 'Error setting up request',
-          details: error.message
+          error: 'Unexpected error',
+          message: error.message,
+          stack: error.stack
         })
       };
     }
