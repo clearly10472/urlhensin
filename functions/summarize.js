@@ -126,7 +126,7 @@ exports.handler = async (event, context) => {
     console.log('Sending content to Gemini API for summarization');
     const geminiApiKey = process.env.GEMINI_API_KEY;
     // 最新のGemini API URLを使用
-    const geminiApiUrl = process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent';
+    const geminiApiUrl = process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent';
     
     if (!geminiApiKey) {
       return {
@@ -147,6 +147,7 @@ exports.handler = async (event, context) => {
       {
         contents: [
           {
+            role: 'user',
             parts: [
               {
                 text: `Summarize the following web page content in one concise sentence:\n\n${mainContent}`
